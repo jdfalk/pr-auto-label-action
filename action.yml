@@ -1,0 +1,207 @@
+<!-- file: action.yml -->
+<!-- version: 1.0.0 -->
+<!-- guid: 8f2e3d4c-5b6a-7e8f-9d0e-1f2a3b4c5d6e -->
+
+name: "PR Auto Label"
+description: "Automatically applies intelligent labels to pull requests based on content, files changed, and commit messages"
+author: "jdfalk"
+
+inputs:
+  github-token:
+    description: "GitHub token for API access"
+    required: true
+  pr-number:
+    description: "Pull request number to label"
+    required: true
+  repository:
+    description: "Repository in owner/repo format"
+    required: true
+  label-config:
+    description: "Optional JSON configuration for custom label rules (URL or inline JSON)"
+    required: false
+    default: ""
+  skip-existing:
+    description: "Skip labeling if PR already has labels"
+    required: false
+    default: "false"
+  dry-run:
+    description: "Analyze and report labels without applying them"
+    required: false
+    default: "false"
+
+outputs:
+  labels-applied:
+    description: "Comma-separated list of labels applied to the PR"
+    value: ${{ steps.label.outputs.labels-applied }}
+  labels-suggested:
+    description: "Comma-separated list of all suggested labels (before deduplication)"
+    value: ${{ steps.label.outputs.labels-suggested }}
+  analysis-summary:
+    description: "Summary of the analysis including files, keywords, and rules matched"
+    value: ${{ steps.label.outputs.analysis-summary }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Apply Labels
+      id: label
+      shell: python
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        GITHUB_REPOSITORY: ${{ inputs.repository }}
+        LABEL_CONFIG: ${{ inputs.label-config }}
+        SKIP_EXISTING: ${{ inputs.skip-existing }}
+        DRY_RUN: ${{ inputs.dry-run }}
+      run: |
+        import os
+        import json
+        import sys
+        import urllib.request
+        import urllib.error
+        from collections import Counter
+
+        def get_github_api(endpoint, token):
+            """Make authenticated GitHub API request."""
+            url = f"https://api.github.com{endpoint}"
+            headers = {
+                "Authorization": f"token {token}",
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "PR-Auto-Label-Action/1.0.0"
+            }
+            req = urllib.request.Request(url, headers=headers)
+            try:
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    return response.status, json.loads(response.read().decode())
+            except urllib.error.HTTPError as e:
+                return e.code, None
+
+        def analyze_pr_content(title, body, changed_files):
+            """Analyze PR content and suggest labels based on patterns."""
+            labels = []
+            analysis = {
+                "title_keywords": [],
+                "body_keywords": [],
+                "file_patterns": [],
+                "rules_matched": []
+            }
+
+            text = (title + " " + (body or "")).lower()
+
+            # Keyword-based rules
+            if any(word in text for word in ["fix", "bug", "error", "issue", "problem"]):
+                labels.append("bug")
+                analysis["rules_matched"].append("bug_keywords")
+            if any(word in text for word in ["feature", "add", "new", "implement"]):
+                labels.append("enhancement")
+                analysis["rules_matched"].append("enhancement_keywords")
+            if any(word in text for word in ["doc", "readme", "documentation"]):
+                labels.append("documentation")
+                analysis["rules_matched"].append("documentation_keywords")
+            if any(word in text for word in ["test", "testing", "spec"]):
+                labels.append("tests")
+                analysis["rules_matched"].append("tests_keywords")
+
+            # File-based rules
+            for file in changed_files:
+                file_lower = file.lower()
+                if file_lower.endswith((".md", ".rst")):
+                    labels.append("documentation")
+                    analysis["file_patterns"].append(f"{file} -> documentation")
+                elif file_lower.endswith(".go"):
+                    labels.append("go")
+                    analysis["file_patterns"].append(f"{file} -> go")
+                elif file_lower.endswith((".js", ".ts", ".jsx", ".tsx")):
+                    labels.append("frontend")
+                    analysis["file_patterns"].append(f"{file} -> frontend")
+                elif file_lower.endswith(".py"):
+                    labels.append("python")
+                    analysis["file_patterns"].append(f"{file} -> python")
+                elif file_lower.endswith(("dockerfile", ".docker")):
+                    labels.append("docker")
+                    analysis["file_patterns"].append(f"{file} -> docker")
+                elif "test" in file_lower:
+                    labels.append("tests")
+                    analysis["file_patterns"].append(f"{file} -> tests")
+
+            return sorted(set(labels)), analysis
+
+        # Get environment variables
+        github_token = os.environ.get("GITHUB_TOKEN")
+        repo = os.environ.get("GITHUB_REPOSITORY")
+        pr_number = os.environ.get("PR_NUMBER")
+        skip_existing = os.environ.get("SKIP_EXISTING", "false").lower() == "true"
+        dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+
+        if not all([github_token, repo, pr_number]):
+            print("❌ Missing required environment variables: GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER")
+            sys.exit(1)
+
+        print(f"📋 Analyzing PR #{pr_number} in {repo}")
+
+        # Fetch PR details
+        status, pr_data = get_github_api(f"/repos/{repo}/pulls/{pr_number}", github_token)
+        if status != 200 or not pr_data:
+            print(f"❌ Failed to fetch PR details: {status}")
+            sys.exit(1)
+
+        # Fetch changed files
+        status, files_data = get_github_api(f"/repos/{repo}/pulls/{pr_number}/files", github_token)
+        if status != 200 or files_data is None:
+            print(f"❌ Failed to fetch changed files: {status}")
+            sys.exit(1)
+
+        changed_files = [item["filename"] for item in (files_data or [])]
+
+        # Analyze PR content
+        suggested_labels, analysis = analyze_pr_content(
+            pr_data.get("title", ""),
+            pr_data.get("body", ""),
+            changed_files
+        )
+
+        # Check existing labels
+        existing_labels = [label["name"] for label in pr_data.get("labels", [])]
+
+        print(f"📝 PR Title: {pr_data.get('title', 'N/A')}")
+        print(f"📂 Changed files: {len(changed_files)}")
+        print(f"🏷️  Suggested labels: {suggested_labels}")
+        print(f"✅ Existing labels: {existing_labels}")
+
+        if skip_existing and existing_labels:
+            print("⏭️  Skipping labeling (existing labels present)")
+            print(f"::set-output name=labels-applied::")
+            print(f"::set-output name=labels-suggested::{','.join(suggested_labels)}")
+            print(f"::set-output name=analysis-summary::{json.dumps(analysis)}")
+            sys.exit(0)
+
+        if not suggested_labels:
+            print("ℹ️  No labels to apply")
+            print(f"::set-output name=labels-applied::")
+            print(f"::set-output name=labels-suggested::")
+            print(f"::set-output name=analysis-summary::{json.dumps(analysis)}")
+            sys.exit(0)
+
+        if dry_run:
+            print("🔍 DRY RUN MODE - Not applying labels")
+            print(f"::set-output name=labels-applied::")
+            print(f"::set-output name=labels-suggested::{','.join(suggested_labels)}")
+            print(f"::set-output name=analysis-summary::{json.dumps(analysis)}")
+            sys.exit(0)
+
+        # Apply labels
+        status, response = get_github_api(
+            f"/repos/{repo}/issues/{pr_number}/labels",
+            github_token
+        )
+
+        if status not in [200, 422]:  # 422 when labels already exist
+            print(f"❌ Failed to apply labels: {status}")
+            if response:
+                print(f"   Response: {response}")
+            sys.exit(1)
+
+        print(f"✅ Successfully applied {len(suggested_labels)} label(s): {suggested_labels}")
+        print(f"::set-output name=labels-applied::{','.join(suggested_labels)}")
+        print(f"::set-output name=labels-suggested::{','.join(suggested_labels)}")
+        print(f"::set-output name=analysis-summary::{json.dumps(analysis)}")
