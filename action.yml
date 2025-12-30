@@ -1,6 +1,6 @@
-<!-- file: action.yml -->
-<!-- version: 1.0.0 -->
-<!-- guid: 8f2e3d4c-5b6a-7e8f-9d0e-1f2a3b4c5d6e -->
+# file: action.yml
+# version: 1.0.0
+# guid: 8f2e3d4c-5b6a-7e8f-9d0e-1f2a3b4c5d6e
 
 name: "PR Auto Label"
 description: "Automatically applies intelligent labels to pull requests based on content, files changed, and commit messages"
