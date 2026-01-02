@@ -5,25 +5,31 @@
 # PR Auto Label Action
 
 Automatically applies intelligent labels to pull requests based on:
+
 - PR title and body content
 - Files changed
 - Commit messages
 
-This composite GitHub Action replaces the functionality of `ghcommon/.github/workflows/scripts/intelligent_labeling.py`.
+This composite GitHub Action replaces the functionality of
+`ghcommon/.github/workflows/scripts/intelligent_labeling.py`.
 
 ## Features
 
 ✨ **Intelligent Analysis**
-- Keyword-based pattern matching for issue types (bug, enhancement, documentation, tests)
+
+- Keyword-based pattern matching for issue types (bug, enhancement,
+  documentation, tests)
 - File extension-based labeling (go, python, frontend, docker, etc.)
 - Automatic deduplication of suggested labels
 
 🔍 **Detailed Analysis**
+
 - Outputs analysis summary with matched rules and file patterns
 - Dry-run mode for testing without applying labels
 - Skip existing labels option
 
 🔒 **Safety & Control**
+
 - Optional skip if PR already has labels
 - Dry-run mode for safe testing
 - Detailed output for debugging
@@ -59,8 +65,8 @@ jobs:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     pr-number: ${{ github.event.pull_request.number }}
     repository: ${{ github.repository }}
-    skip-existing: 'true'           # Don't label if already has labels
-    dry-run: 'false'                # Test without applying
+    skip-existing: 'true' # Don't label if already has labels
+    dry-run: 'false' # Test without applying
 ```
 
 ### Using Outputs
@@ -84,12 +90,12 @@ jobs:
 
 | Input           | Description                                  | Required | Default   |
 | --------------- | -------------------------------------------- | -------- | --------- |
-| `github-token`  | GitHub token for API access                  | ✅ Yes    | -         |
-| `pr-number`     | Pull request number to label                 | ✅ Yes    | -         |
-| `repository`    | Repository in `owner/repo` format            | ✅ Yes    | -         |
-| `label-config`  | Optional JSON configuration for custom rules | ❌ No     | `''`      |
-| `skip-existing` | Skip labeling if PR already has labels       | ❌ No     | `'false'` |
-| `dry-run`       | Analyze without applying labels              | ❌ No     | `'false'` |
+| `github-token`  | GitHub token for API access                  | ✅ Yes   | -         |
+| `pr-number`     | Pull request number to label                 | ✅ Yes   | -         |
+| `repository`    | Repository in `owner/repo` format            | ✅ Yes   | -         |
+| `label-config`  | Optional JSON configuration for custom rules | ❌ No    | `''`      |
+| `skip-existing` | Skip labeling if PR already has labels       | ❌ No    | `'false'` |
+| `dry-run`       | Analyze without applying labels              | ❌ No    | `'false'` |
 
 ## Outputs
 
@@ -128,6 +134,7 @@ jobs:
 **PR Title:** `fix: resolve connection timeout issue in database handler`
 
 **Changed Files:**
+
 - `src/database/handler.go`
 - `test/database_handler_test.go`
 
@@ -138,6 +145,7 @@ jobs:
 **PR Title:** `feat: add React dashboard component`
 
 **Changed Files:**
+
 - `frontend/src/Dashboard.tsx`
 - `frontend/src/Dashboard.test.tsx`
 - `README.md`
@@ -149,6 +157,7 @@ jobs:
 **PR Title:** `docs: update API documentation`
 
 **Changed Files:**
+
 - `docs/api.md`
 - `docs/authentication.md`
 
@@ -172,18 +181,20 @@ Output will show suggested labels but won't apply them.
 
 ## Comparison with Original Script
 
-This action provides the same labeling logic as `ghcommon/.github/workflows/scripts/intelligent_labeling.py` with these improvements:
+This action provides the same labeling logic as
+`ghcommon/.github/workflows/scripts/intelligent_labeling.py` with these
+improvements:
 
 | Feature                  | Original | Action |
 | ------------------------ | -------- | ------ |
-| Core labeling logic      | ✅        | ✅      |
-| Keyword analysis         | ✅        | ✅      |
-| File-based labeling      | ✅        | ✅      |
-| Dry-run mode             | ❌        | ✅      |
-| Skip existing labels     | ❌        | ✅      |
-| Detailed analysis output | ❌        | ✅      |
-| Composite action format  | ❌        | ✅      |
-| Reusable in workflows    | ❌        | ✅      |
+| Core labeling logic      | ✅       | ✅     |
+| Keyword analysis         | ✅       | ✅     |
+| File-based labeling      | ✅       | ✅     |
+| Dry-run mode             | ❌       | ✅     |
+| Skip existing labels     | ❌       | ✅     |
+| Detailed analysis output | ❌       | ✅     |
+| Composite action format  | ❌       | ✅     |
+| Reusable in workflows    | ❌       | ✅     |
 
 ## Error Handling
 
@@ -199,6 +210,7 @@ The action handles the following scenarios:
 ### Action fails with "Missing required environment variables"
 
 Ensure you're providing:
+
 - `github-token` - Use `${{ secrets.GITHUB_TOKEN }}`
 - `pr-number` - Use `${{ github.event.pull_request.number }}`
 - `repository` - Use `${{ github.repository }}`
@@ -213,13 +225,16 @@ Ensure you're providing:
 ### API rate limiting
 
 If you hit API rate limits, consider:
+
 - Running the action only on specific triggers
 - Using a token with higher rate limits if needed
 - Batching label operations
 
 ## Contributing
 
-Improvements to the labeling logic are welcome. Consider extending the action with:
+Improvements to the labeling logic are welcome. Consider extending the action
+with:
+
 - Custom label rule configuration via JSON
 - Machine learning-based content analysis
 - Integration with issue templates

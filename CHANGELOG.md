@@ -7,11 +7,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.1] - 2025-12-30
 
 ### Fixed
+
 - Corrected comment formatting for action metadata
 
 ## [1.0.0] - 2025-12-29
@@ -19,8 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release of PR Auto Label action
-- Keyword-based pattern matching for bug, enhancement, documentation, and tests labels
-- File extension-based labeling for language detection (Go, Python, Frontend, Docker)
+- Keyword-based pattern matching for bug, enhancement, documentation, and tests
+  labels
+- File extension-based labeling for language detection (Go, Python, Frontend,
+  Docker)
 - Dry-run mode for safe testing without applying labels
 - Skip existing labels option to avoid re-labeling PRs
 - Detailed analysis output with matched rules and file patterns

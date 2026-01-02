@@ -2,46 +2,46 @@
 # version: 1.0.0
 # guid: 8f2e3d4c-5b6a-7e8f-9d0e-1f2a3b4c5d6e
 
-name: "PR Auto Label"
-description: "Automatically applies intelligent labels to pull requests based on content, files changed, and commit messages"
-author: "jdfalk"
+name: 'PR Auto Label'
+description: 'Automatically applies intelligent labels to pull requests based on content, files changed, and commit messages'
+author: 'jdfalk'
 
 inputs:
   github-token:
-    description: "GitHub token for API access"
+    description: 'GitHub token for API access'
     required: true
   pr-number:
-    description: "Pull request number to label"
+    description: 'Pull request number to label'
     required: true
   repository:
-    description: "Repository in owner/repo format"
+    description: 'Repository in owner/repo format'
     required: true
   label-config:
-    description: "Optional JSON configuration for custom label rules (URL or inline JSON)"
+    description: 'Optional JSON configuration for custom label rules (URL or inline JSON)'
     required: false
-    default: ""
+    default: ''
   skip-existing:
-    description: "Skip labeling if PR already has labels"
+    description: 'Skip labeling if PR already has labels'
     required: false
-    default: "false"
+    default: 'false'
   dry-run:
-    description: "Analyze and report labels without applying them"
+    description: 'Analyze and report labels without applying them'
     required: false
-    default: "false"
+    default: 'false'
 
 outputs:
   labels-applied:
-    description: "Comma-separated list of labels applied to the PR"
+    description: 'Comma-separated list of labels applied to the PR'
     value: ${{ steps.label.outputs.labels-applied }}
   labels-suggested:
-    description: "Comma-separated list of all suggested labels (before deduplication)"
+    description: 'Comma-separated list of all suggested labels (before deduplication)'
     value: ${{ steps.label.outputs.labels-suggested }}
   analysis-summary:
-    description: "Summary of the analysis including files, keywords, and rules matched"
+    description: 'Summary of the analysis including files, keywords, and rules matched'
     value: ${{ steps.label.outputs.analysis-summary }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Apply Labels
       id: label
