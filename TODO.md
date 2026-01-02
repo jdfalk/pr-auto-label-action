@@ -1,5 +1,5 @@
 <!-- file: TODO.md -->
-<!-- version: 1.0.0 -->
+<!-- version: 1.0.2 -->
 <!-- guid: 681e6f6e-2c12-4684-9200-1251921044bc -->
 
 # TODO - pr-auto-label-action
@@ -40,4 +40,8 @@ Automatically applies intelligent labels to pull requests
 
 ---
 
-*This TODO.md was automatically generated on 2026-01-02*
+<!-- markdownlint-disable MD036 -->
+
+_This TODO.md was automatically generated on 2026-01-02_
+
+<!-- markdownlint-enable MD036 -->
