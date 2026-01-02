@@ -1,8 +1,6 @@
-# file: .github/copilot-instructions.md
-
-# version: 1.0.0
-
-# guid: 5d6e7f8a-9b0c-1d2e-3f4a-5b6c7d8e9f0a
+<!-- file: .github/copilot-instructions.md -->
+<!-- version: 1.0.1 -->
+<!-- guid: 5d6e7f8a-9b0c-1d2e-3f4a-5b6c7d8e9f0a -->
 
 # AI Agent Instructions (Standard)
 
