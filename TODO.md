@@ -1,6 +1,7 @@
 <!-- file: TODO.md -->
 <!-- version: 1.0.2 -->
 <!-- guid: 681e6f6e-2c12-4684-9200-1251921044bc -->
+<!-- last-edited: 2026-01-19 -->
 
 # TODO - pr-auto-label-action
 
